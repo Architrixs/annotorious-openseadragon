@@ -43,6 +43,12 @@
       .a9s-selection-mask {
         display:none;
       }
+
+      .a9s-text{
+        font-size: 60px;
+        stroke: black;
+        fill: green;
+      }
     </style>
     <script>
       var updatedAnnotation = {
@@ -79,6 +85,30 @@
           showFlipControl: true,
           constrainDuringPan: true,
         });
+
+        document.addEventListener('auxclick', function(evt) {
+          console.log("auxclick", event);
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+            //alert(evt.target.tagName);
+        }, false);
+        viewer.addHandler('canvas-nonprimary-release', function (event) {
+          console.log("canvas-nonprimary-release", event);
+          event.originalEvent.preventDefault();
+          event.originalEvent.stopPropagation();
+          event.originalEvent.stopImmediatePropagation();
+
+        });
+        viewer.addHandler('pointerup', function (event) {
+          console.log("contextmenu", event);
+          event.preventDefault();
+        });
+        //auxclick 
+        // document.addHandler('auxclick', function (event) {
+        //   console.log("auxclick", event);
+        //   event.preventDefault();
+        // });
         
         var anno = OpenSeadragon.Annotorious(viewer, {
           locale: 'auto',
@@ -91,20 +121,24 @@
           // disableDeleteKey: true
         });
 
+        Annotorious.SelectorPack(anno, {
+          tools: ['circle', 'ellipse', 'rect', 'freehand', 'polygon', 'line', 'polyline', 'customline']
+        });
         anno.setAuthInfo({
           id: 'http://www.example.com/rainer',
           displayName: 'rainer'
         });
-
+         var tools = anno.listDrawingTools();
+        var selected = 0;
         var toolToggle = document.getElementById('current-tool');
         toolToggle.addEventListener('click', function() {   
-          if (toolToggle.innerHTML == 'TOOL: RECTANGLE') {
-            toolToggle.innerHTML = 'TOOL: POLYGON';
-            anno.setDrawingTool('polygon');
-          } else {
-            toolToggle.innerHTML = 'TOOL: RECTANGLE';
-            anno.setDrawingTool('rect');
-          }
+
+          selected += 1;
+          selected = selected % tools.length;
+
+          var tool = tools[selected];
+          toolToggle.innerHTML = tool.toUpperCase();
+          anno.setDrawingTool(tool);
         });
 
         var modeBtn = document.getElementById('mode');
@@ -128,6 +162,10 @@
 
         anno.on('createAnnotation', function(a, overrideId) {
           console.log('created', a);
+        });
+
+        anno.on('createSelection', function(a) {
+          console.log('createSelection', a);
         });
 
         anno.on('updateAnnotation', function(annotation, previous) {
@@ -173,9 +211,10 @@
         <button id="current-tool">TOOL: RECTANGLE</button>
         <button id="mode">MODE: VIEW</button>
       </p>
-      <div id="openseadragon" style="width: 640px; height: 480px;"></div>
+      <div oncontextmenu="return false;" id="openseadragon" style="width: 640px; height: 480px;"></div>
     </div>      
     <script src="https://cdn.jsdelivr.net/npm/openseadragon@4.1/build/openseadragon/openseadragon.min.js"></script>
     <script src="openseadragon-annotorious.min.js"></script>
-  </body>
+    <script src="annotorious-selector-pack.js"></script>
+      </body>
 </html>

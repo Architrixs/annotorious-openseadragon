@@ -1,6 +1,6 @@
 {
-  "name": "@recogito/annotorious-openseadragon",
-  "version": "2.7.13",
+  "name": "@architrixs/annotorious-openseadragon",
+  "version": "1.0.1",
   "description": "Annotorious image annotation for OpenSeadragon",
   "main": "dist/openseadragon-annotorious.min.js",
   "scripts": {
@@ -48,6 +48,7 @@
     "openseadragon": "^3.0.0"
   },
   "dependencies": {
+    "@architrixs/annotorious": "https://gitlab.com/architrixs/library-collection/-/raw/main/v2/architrixs-annotorious-1.0.1.tgz",
     "@recogito/annotorious": "2.7.12",
     "@recogito/recogito-client-core": "^1.7.8",
     "preact": "^10.5.13",

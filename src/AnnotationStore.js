@@ -1,14 +1,15 @@
 import RBush from 'rbush';
-import { SVG_NAMESPACE } from '@recogito/annotorious/src/util/SVG';
-import { drawShape, shapeArea, svgFragmentToShape, parseRectFragment } from '@recogito/annotorious/src/selectors';
+import { SVG_NAMESPACE } from '@architrixs/annotorious/src/util/SVG';
+import { drawShape, shapeArea, svgFragmentToShape, parseRectFragment } from '@architrixs/annotorious/src/selectors';
 import { WebAnnotation } from '@recogito/recogito-client-core';
 import { 
   pointInCircle,
   pointInEllipse,
   pointInPolygon,
   svgPathToPolygons,
-  pointInLine
-} from '@recogito/annotorious/src/util/Geom2D';
+  pointInLine,
+  svgPathsToPolygon
+} from '@architrixs/annotorious/src/util/Geom2D';
 
 /** 
  * Computes the bounding box of an annotation. WARNING:
@@ -101,7 +102,17 @@ const pointInSVGShape = (x, y, annotation, buffer) => {
     const x2 = parseInt(svg.getAttribute('x2'));
     const y2 = parseInt(svg.getAttribute('y2'));
     return pointInLine(pt, x1, y1, x2, y2, buffer);
-  } else {
+  }
+  else if (nodeName === 'polyline') {
+    const points = Array.from(svg.points).map(pt => [pt.x, pt.y]);
+    return pointInPolyline(pt, points);
+  } 
+  else if (nodeName === 'g'){
+    const polygonPoint = svgPathsToPolygon(svg);
+    var inside = pointInPolygon(pt, polygonPoint);
+    return inside;
+  }
+  else {
     throw `Unsupported SVG shape type: ${nodeName}`;
   }
 }
@@ -187,6 +198,17 @@ export default class AnnotationStore {
 
     this.spatial_index.remove(item, (a, b) =>
       a.annotation.id === b.annotation.id);
+  }
+
+  pointInPolyline = (pt, points) => {
+    var i, j, c = false;
+    for (i = 0, j = points.length - 1; i < points.length; j = i++) {
+      if (((points[i][1] > pt[1]) != (points[j][1] > pt[1])) &&
+          (pt[0] < (points[j][0] - points[i][0]) * (pt[1] - points[i][1]) / (points[j][1] - points[i][1]) + points[i][0])) {
+        c = !c;
+      }
+    }
+    return c;
   }
 
 }
